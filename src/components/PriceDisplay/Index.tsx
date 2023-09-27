@@ -7,16 +7,44 @@ function PriceDisplay() {
   const [previousPrice, setPreviousPrice] = useState<string | null>(null);
   const [priceColor, setPriceColor] = useState<string>('');
   const [priceArrow, setPriceArrow] = useState<string>('');
+  const [updating, setUpdating] = useState(false);
+  const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
-    const fetchPriceInterval = setInterval(() => {
+    const fetchPriceAndUpdate = () => {
       priceContext?.updateBitcoinPrice?.();
-    }, 30000);
+      setUpdating(false);
+      setCountdown(30);
+    };
+
+    // Initially fetch and start the countdown
+    fetchPriceAndUpdate();
+
+    // Fetch and start the countdown every 30 seconds
+    const fetchInterval = setInterval(fetchPriceAndUpdate, 30000);
 
     return () => {
-      clearInterval(fetchPriceInterval);
+      clearInterval(fetchInterval);
+      setUpdating(true);
     };
   }, [priceContext]);
+
+  useEffect(() => {
+    // Start countdown timer
+    const countdownTimer = setInterval(() => {
+      if (countdown > 0) {
+        setCountdown(countdown - 1);
+      }
+    }, 1000);
+
+    // Reset countdown when updating
+    if (updating) {
+      setCountdown(30);
+    }
+
+    // Clear the timer when the component unmounts
+    return () => clearInterval(countdownTimer);
+  }, [countdown, updating]);
 
   useEffect(() => {
     setLoading(false);
@@ -46,7 +74,7 @@ function PriceDisplay() {
       }
     }
 
-    return ''; // Default color
+    return ''; // Starts with no color for the first 30 seconds
   };
 
   const getPriceArrow = () => {
@@ -67,7 +95,8 @@ function PriceDisplay() {
             ${priceContext?.bitcoinPrice || 'N/A'}
             <span className={`ml-2 ${priceColor}`}>{priceArrow}</span>
           </p>
-          {<span className="text-sm text-gray-500">Updating every 30 seconds...</span>}
+          {!updating && <span className="text-sm text-gray-500">{countdown > 0 ? `Updating in ${countdown} seconds...` : 'Updating now...'}</span>}
+          {/* {<span className="text-sm text-gray-500">Updating every 30 seconds...</span>} */}
         </div>
       )}
     </div>

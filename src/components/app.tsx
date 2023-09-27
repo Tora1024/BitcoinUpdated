@@ -1,3 +1,4 @@
+import { Router, Route } from 'preact-router';
 import { PriceProvider } from '../context/PriceContext';
 import Header from './Header/Index';
 import Footer from './Footer/Index';
@@ -11,8 +12,12 @@ export function App() {
       <div className="min-h-screen flex flex-col justify-between">
         <Header />
         <main className="flex-grow">
-          <PriceDisplay />
+          <Router>
+            <Route path="/" component={PriceDisplay} />
+            <Route path="/about" component={AboutUs} />
+          </Router>
         </main>
+
         <Footer />
       </div>
     </PriceProvider>
@@ -20,3 +25,9 @@ export function App() {
 }
 
 export default App;
+
+{
+  /* <main className="flex-grow">
+          <PriceDisplay />
+        </main> */
+}
